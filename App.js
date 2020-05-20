@@ -11,12 +11,12 @@ import InputItem from "./Components/InputItem";
 import DisplayItem from "./Components/DisplayItem";
 
 export default function App() {
-  const [enteredItem, setEnteredItem] = useState("");
+  const [enteredItem, updateItemText] = useState("");
   const [itemsArray, addItems] = useState([]);
   const [addButtonState, addButtonStateToggle] = useState(true);
 
   const itemInputHandler = enteredText => {
-    setEnteredItem(enteredText);
+    updateItemText(enteredText);
     if (enteredText === "") {
       addButtonStateToggle(true);
     } else {
@@ -29,8 +29,14 @@ export default function App() {
       ...itemsArray,
       { value: enteredItem, id: Math.random().toString() }
     ]);
-    setEnteredItem("");
+    updateItemText("");
     addButtonStateToggle(true);
+  };
+
+  const removeItemHandler = id => {
+    addItems(itemsArray => {
+      return itemsArray.filter(item => item.id !== id);
+    });
   };
 
   return (
@@ -40,14 +46,15 @@ export default function App() {
         inputHandler={itemInputHandler}
         value={enteredItem}
         onPressHandler={addItemHandler}
-        buttonDisable={addButtonState}
+        buttonDisabler={addButtonState}
       />
       <FlatList
         keyExtractor={(item, index) => item.id}
         data={itemsArray}
         renderItem={items => (
           <DisplayItem
-            onDelete={() => console.log("disable")}
+            id={items.item.id}
+            onDelete={removeItemHandler}
             value={items.item.value}
           />
         )}
