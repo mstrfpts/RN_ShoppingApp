@@ -5,36 +5,72 @@ import {
   TextInput,
   View,
   Button,
-  FlatList
+  FlatList,
+  Modal
 } from "react-native";
+import _ from "lodash";
 import InputItem from "./Components/InputItem";
 import DisplayItem from "./Components/DisplayItem";
 
 export default function App() {
-  const [enteredItem, updateItemText] = useState("");
-  const [itemsArray, addItems] = useState([]);
-  const [addButtonState, addButtonStateToggle] = useState(true);
+  const [enteredItem, setItemText] = useState("");
+  const [itemQuantity, setItemQuantity] = useState(1);
+  const [itemsArray, setItemsArray] = useState([]);
+  const [completedItemArray, addToCompletedItems] = useState([]);
+  const [inputOverlayState, setInputOverlay] = useState(false);
+  const [addButtonState, setAddButton] = useState(true);
 
-  const itemInputHandler = enteredText => {
-    updateItemText(enteredText);
-    if (enteredText === "") {
-      addButtonStateToggle(true);
-    } else {
-      addButtonStateToggle(false);
+  const itemQuantityInputHandler = enteredItemQuantity => {
+    console.log("derd, enteredItem", enteredItemQuantity);
+    console.log("derd, enteredItem1", typeof enteredItemQuantity);
+    if (enteredItemQuantity == "") {
+      setItemQuantity("");
+    } else if (!isNaN(enteredItemQuantity)) {
+      setItemQuantity(parseInt(enteredItemQuantity));
     }
   };
 
+  const itemQuantityIncreaseHandler = change => {
+    setItemQuantity(itemQuantity + 1);
+  };
+
+  const itemQuantityDecreaseHandler = change => {
+    setItemQuantity(itemQuantity - 1);
+  };
+
+  const itemInputHandler = enteredText => {
+    setItemText(enteredText);
+    if (enteredText === "") {
+      setAddButton(true);
+    } else {
+      setAddButton(false);
+    }
+  };
+
+  const showIntputOverlayHandler = () => {
+    setInputOverlay(true);
+  };
+
+  const closeIntputOverlayHandler = () => {
+    setInputOverlay(false);
+  };
+
   const addItemHandler = () => {
-    addItems([
+    setItemsArray([
       ...itemsArray,
-      { value: enteredItem, id: Math.random().toString() }
+      {
+        value: enteredItem,
+        id: Math.random().toString(),
+        quantity: itemQuantity
+      }
     ]);
-    updateItemText("");
-    addButtonStateToggle(true);
+    setItemText("");
+    setAddButton(true);
+    setItemQuantity(1);
   };
 
   const removeItemHandler = id => {
-    addItems(itemsArray => {
+    setItemsArray(itemsArray => {
       return itemsArray.filter(item => item.id !== id);
     });
   };
@@ -42,11 +78,18 @@ export default function App() {
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Shopping List</Text>
+      <Button title="Add new Item" onPress={showIntputOverlayHandler} />
       <InputItem
-        inputHandler={itemInputHandler}
-        value={enteredItem}
-        onPressHandler={addItemHandler}
+        itemInputHandler={itemInputHandler}
+        itemQuantityInputHandler={itemQuantityInputHandler}
+        itemQuantityDecreaseHandler={itemQuantityDecreaseHandler}
+        itemQuantityIncreaseHandler={itemQuantityIncreaseHandler}
+        item={enteredItem}
+        itemQuantity={itemQuantity}
+        addItemHandler={addItemHandler}
         buttonDisabler={addButtonState}
+        closeInputOverlay={closeIntputOverlayHandler}
+        visible={inputOverlayState}
       />
       <FlatList
         keyExtractor={(item, index) => item.id}
@@ -56,6 +99,7 @@ export default function App() {
             id={items.item.id}
             onDelete={removeItemHandler}
             value={items.item.value}
+            quantity={items.item.quantity}
           />
         )}
       />
@@ -65,7 +109,10 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 50
+    padding: 50,
+    //borderColor: "black",
+    //borderWidth: 1,
+    flex: 1
   },
 
   header: {

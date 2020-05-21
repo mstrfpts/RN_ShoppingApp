@@ -5,7 +5,7 @@ const DisplayItem = props => {
   return (
     <TouchableOpacity onPress={props.onDelete.bind(this, props.id)}>
       <View style={styles.listItem}>
-        <Text>{props.value}</Text>
+        <Text>{`${props.value}(${props.quantity})`}</Text>
       </View>
     </TouchableOpacity>
   );
